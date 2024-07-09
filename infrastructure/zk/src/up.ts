@@ -10,9 +10,13 @@ export function createVolumes() {
     fs.mkdirSync(`${process.env.ZKSYNC_HOME}/volumes/postgres`, {
         recursive: true
     });
+    fs.mkdirSync(`${process.env.ZKSYNC_HOME}/volumes/bitcoin`, {
+        recursive: true
+    });
 }
 
 export async function up(runObservability: boolean, composeFile?: string) {
+    createVolumes();
     if (composeFile) {
         await utils.spawn(`docker compose -f ${composeFile} up -d`);
     } else {
