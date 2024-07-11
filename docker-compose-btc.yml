@@ -1,6 +1,20 @@
 version: '3.8'
 
 services:
+  bitcoind:
+    image: "lightninglabs/bitcoin-core:25"
+    command:
+        - -regtest
+        - -server
+        - -rpcbind=0.0.0.0
+        - -rpcallowip=0.0.0.0/0
+        - -rpcuser=rpcuser
+        - -rpcpassword=rpcpassword
+        - -fallbackfee=0.0002
+        - -txindex
+    ports:
+        - "18443:18443"
+
   postgres:
     image: "postgres:14"
     command: postgres -c 'max_connections=200'
@@ -12,24 +26,6 @@ services:
         target: /var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=notsecurepassword
-
-  bitcoin-regtest:
-    image: ruimarinho/bitcoin-core:latest
-    container_name: bitcoin-regtest
-    ports:
-      - "18443:18443"
-      - "18444:18444"
-    volumes:
-      - type: bind
-        source: ./volumes/bitcoin
-        target: /home/bitcoin/.bitcoin
-      - type: bind
-        source: ./bitcoin.conf
-        target: /home/bitcoin/.bitcoin/bitcoin.conf
-    command:
-      - bitcoind
-      - -printtoconsole
-      - -conf=/home/bitcoin/.bitcoin/bitcoin.conf
 
 volumes:
   postgres:
