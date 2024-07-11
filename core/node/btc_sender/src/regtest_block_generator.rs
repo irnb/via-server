@@ -1,8 +1,11 @@
 use std::time::Duration;
-use tokio::sync::watch;
-use bitcoincore_rpc::{Auth, Client, RpcApi};
-use bitcoincore_rpc::bitcoin::{Address, Network};
+
 use anyhow::Context;
+use bitcoincore_rpc::{
+    bitcoin::{Address, Network},
+    Auth, Client, RpcApi,
+};
+use tokio::sync::watch;
 
 const BTC_WALLET_NAME: &str = "regtest_wallet";
 
@@ -23,17 +26,25 @@ pub struct BlockGeneratorConfig {
 
 impl BitcoinBlockGenerator {
     pub fn new(config: BlockGeneratorConfig) -> anyhow::Result<Self> {
-        let auth = Auth::UserPass(config.bitcoin_rpc_user.clone(), config.bitcoin_rpc_pass.clone());
+        let auth = Auth::UserPass(
+            config.bitcoin_rpc_user.clone(),
+            config.bitcoin_rpc_pass.clone(),
+        );
         let client = Client::new(&config.bitcoin_rpc_url, auth)?;
 
         Self::load_or_create_wallet(&client)?;
 
-        let mining_address = client.get_new_address(None, None)?
+        let mining_address = client
+            .get_new_address(None, None)?
             .require_network(Network::Regtest)?;
 
         tracing::info!(target: "bitcoin_block_generator", "Mining address: {}", mining_address);
 
-        Ok(Self { client, config, mining_address })
+        Ok(Self {
+            client,
+            config,
+            mining_address,
+        })
     }
 
     fn load_or_create_wallet(client: &Client) -> anyhow::Result<()> {
@@ -66,14 +77,18 @@ impl BitcoinBlockGenerator {
 
     async fn generate_initial_blocks(&self) -> anyhow::Result<()> {
         tracing::info!(target: "bitcoin_block_generator", "Generating initial 100 blocks...");
-        let block_hashes = self.client.generate_to_address(100, &self.mining_address)
+        let block_hashes = self
+            .client
+            .generate_to_address(100, &self.mining_address)
             .context("Failed to generate initial blocks")?;
         tracing::info!(target: "bitcoin_block_generator", "Generated 100 blocks. Last block hash: {}", block_hashes.last().unwrap());
         Ok(())
     }
 
     async fn check_balance(&self) -> anyhow::Result<f64> {
-        let balance = self.client.get_received_by_address(&self.mining_address, None)?;
+        let balance = self
+            .client
+            .get_received_by_address(&self.mining_address, None)?;
         let balance_btc = balance.to_btc();
         tracing::info!(target: "bitcoin_block_generator", "Current balance: {} BTC", balance_btc);
         Ok(balance_btc)
