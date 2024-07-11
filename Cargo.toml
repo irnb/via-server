@@ -71,6 +71,7 @@ members = [
     "core/tests/loadnext",
     "core/tests/vm-benchmark",
     "core/tests/vm-benchmark/harness",
+    "core/lib/btc_client", "core/node/btc_sender",
 ]
 resolver = "2"
 
@@ -241,6 +242,9 @@ zksync_types = { path = "core/lib/types" }
 zksync_utils = { path = "core/lib/utils" }
 zksync_web3_decl = { path = "core/lib/web3_decl" }
 zksync_crypto_primitives = { path = "core/lib/crypto_primitives" }
+
+via_btc_client = { path = "core/lib/btc_client" }
+via_btc_sender = { path = "core/node/btc_sender" }
 
 # Framework and components
 zksync_node_framework = { path = "core/node/node_framework" }
